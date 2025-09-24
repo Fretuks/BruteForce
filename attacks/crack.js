@@ -27,9 +27,8 @@ let found = false;
 
 async function tryCandidate(candidate) {
     const url = "http://localhost:3000/login";
-    console.log(`Trying candidate (masked): ${candidate.replace(/.(?=.{2})/g, '*')}`); // mask except last 2 chars
-
-    const body = {username: USERNAME, password: candidate}; // lowercase keys (match server)
+    console.log(`Trying candidate (masked): ${candidate.replace(/.(?=.{2})/g, '*')}`);
+    const body = {username: USERNAME, password: candidate};
     try {
         const resp = await fetch(url, {
             method: 'POST',
