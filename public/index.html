@@ -1,10 +1,55 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿
+<!doctype html>
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>BruteForce</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login Demo</title>
+    <style>
+        body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:32px}
+        form{max-width:360px}
+        input{display:block;margin:8px 0;padding:8px;width:100%}
+        button{padding:8px 12px}
+        .msg{margin-top:12px}
+    </style>
 </head>
 <body>
+<h1>Login (Demo)</h1>
+<form id="login">
+    <label>Benutzername
+        <input id="username" name="username" autocomplete="username" required />
+    </label>
+    <label>Passwort
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+    </label>
+    <button type="submit">Login</button>
+</form>
+<div class="msg" id="msg"></div>
 
+<script>
+    const form = document.getElementById('login');
+    const msg = document.getElementById('msg');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.textContent = 'Sende...';
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        try {
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.ok) {
+                msg.textContent = 'Erfolgreich authentifiziert!';
+            } else {
+                msg.textContent = 'Fehler: ' + (data.error || res.statusText);
+            }
+        } catch (err) {
+            msg.textContent = 'Netzwerkfehler';
+        }
+    });
+</script>
 </body>
 </html>
