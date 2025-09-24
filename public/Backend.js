@@ -10,6 +10,7 @@ app.post('/login', (req, res) => {
     const {username, password} = req.body;
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
+        res.status(200);
         res.send('Login erfolgreich');
     } else {
         res.status(401).send('Falscher Benutzername oder Passwort');
