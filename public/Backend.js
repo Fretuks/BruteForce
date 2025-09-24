@@ -21,5 +21,5 @@ app.get('/login', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`läuft http://localhost:${port}`);
+    console.log(`läuft http://localhost:${port}/login`);
 });
