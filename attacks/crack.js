@@ -35,7 +35,6 @@ async function tryCandidate(candidate) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         });
-
         if (resp.status === 200) {
             console.log(`Found: ${candidate}`);
             found = true;
@@ -43,7 +42,6 @@ async function tryCandidate(candidate) {
         } else if (resp.status === 401) {
             return false;
         } else {
-            // unexpected response
             const text = await resp.text().catch(() => '');
             console.warn('Unexpected response', resp.status, text);
             return false;
