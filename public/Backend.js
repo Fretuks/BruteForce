@@ -9,7 +9,6 @@ const users = JSON.parse(fs.readFileSync('C:/Users/frederik/WebstormProjects/Bru
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
     const user = users.find(u => u.username === username && u.password === password);
-
     if (user) {
         res.send('Login erfolgreich');
     } else {

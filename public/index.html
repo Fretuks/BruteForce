@@ -40,7 +40,16 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            const data = await res.json();
+
+            let data;
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                data = { ok: res.ok, error: text || res.statusText };
+            }
+
             if (res.ok && data.ok) {
                 msg.textContent = 'Erfolgreich authentifiziert!';
             } else {
