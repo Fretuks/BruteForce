@@ -1,4 +1,4 @@
-# BruteForce — Demo & Teaching Project
+# BruteForce — Demo Project
 
 > Small educational demo showing a tiny login backend, simple frontend, and several local-only attack/defense experiments.
 
@@ -18,7 +18,6 @@
 * [Safe testing — local simulation (recommended)](#safe-testing--local-simulation-recommended)
 * [Attacks folder — ethical warning](#attacks-folder--ethical-warning)
 * [Responsible testing of rate-limiting / lockouts](#responsible-testing-of-rate-limiting--lockouts)
-* [Useful commands / examples](#useful-commands--examples)
 * [Security & Ethics (must read)](#security--ethics-must-read)
 
 ---
@@ -32,7 +31,7 @@ This repository demonstrates:
 * educational scripts showing brute-force concepts, dictionary mutations and a *local-only* simulation harness for safe demonstrations
 * suggestions and code examples for defensive measures (rate limiting, progressive delay, lockout, bcrypt)
 
-This is intended for classroom or lab use only.
+This is intended for classroom use only.
 
 ---
 
@@ -220,34 +219,6 @@ If you need to validate how your server responds to repeated attempts:
 3. Log all test activity and audit after tests.
 
 I can help you implement a secure test-mode endpoint if needed.
-
----
-
-## Useful commands / examples
-
-Install deps:
-
-```bash
-npm install
-```
-
-Start server:
-
-```bash
-node public/Backend.js
-```
-
-Run local simulation (example):
-
-```bash
-node crack_sim_local.js test digits 4 TEST_DATA/users.json
-```
-
-Generate bcrypt hash:
-
-```bash
-node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1]) S3cret!"
-```
 
 ---
 
