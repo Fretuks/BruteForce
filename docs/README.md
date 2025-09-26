@@ -20,7 +20,6 @@
 * [Responsible testing of rate-limiting / lockouts](#responsible-testing-of-rate-limiting--lockouts)
 * [Useful commands / examples](#useful-commands--examples)
 * [Security & Ethics (must read)](#security--ethics-must-read)
-* [License](#license)
 
 ---
 
