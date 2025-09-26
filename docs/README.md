@@ -120,8 +120,6 @@ Start the server:
 
 ```bash
 node public/Backend.js
-# or
-node server.js
 ```
 
 Open the demo frontend in your browser:
@@ -150,8 +148,6 @@ Edit `TEST_DATA/users.json` and add user objects in the expected format.
 
 Generate a bcrypt hash and store it as `passwordHash`:
 
-Example (Node one-liner):
-
 ```bash
 node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1]) S3cret!"
 ```
@@ -178,12 +174,18 @@ To explore brute-force behavior **safely**, use a local simulation harness that 
 * account lockout after repeated failures
 * performance metrics (attempts/s) against a local hash
 
-A recommended script name: `crack_sim_local.js`. Example usage:
+Example usage:
 
 ```bash
-node crack_sim_local.js <username> <charset> <maxlen> [users.json]
+node crack.js <username> <charset> <maxlen>
 # e.g.
-node crack_sim_local.js test digits 4 TEST_DATA/users.json
+node crack.js test digits 4
+```
+
+```bash
+node crack2.js <username> <maxlen>
+# e.g.
+node crack2.js test 4
 ```
 
 This approach is safe for demonstrations and class assignments because it does not send guesses over the network to external targets.
