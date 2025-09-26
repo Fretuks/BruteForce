@@ -197,7 +197,7 @@ The `attacks/` folder contains example scripts that illustrate:
 * candidate generation (charset iteration)
 * dictionary mutation techniques
 
-**Important:** Those scripts are for educational analysis only. **Do not** run them against remote systems you do not own or have explicit permission to test. If you must test an HTTP endpoint on your own server, use one of the responsible test patterns described below.
+**Important:** Those scripts are for educational analysis only. **Do not** run them against remote systems you do not own or have explicit permission to test.
 
 ---
 
