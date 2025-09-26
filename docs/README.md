@@ -17,7 +17,6 @@
 * [Create users (plaintext and bcrypt)](#create-users-plaintext-and-bcrypt)
 * [Safe testing — local simulation (recommended)](#safe-testing--local-simulation-recommended)
 * [Attacks folder — ethical warning](#attacks-folder--ethical-warning)
-* [Responsible testing of rate-limiting / lockouts](#responsible-testing-of-rate-limiting--lockouts)
 * [Security & Ethics (must read)](#security--ethics-must-read)
 
 ---
@@ -199,26 +198,6 @@ The `attacks/` folder contains example scripts that illustrate:
 * dictionary mutation techniques
 
 **Important:** Those scripts are for educational analysis only. **Do not** run them against remote systems you do not own or have explicit permission to test. If you must test an HTTP endpoint on your own server, use one of the responsible test patterns described below.
-
----
-
-## Responsible testing of rate-limiting / lockouts
-
-If you need to validate how your server responds to repeated attempts:
-
-1. **Prefer local simulation** (no network).
-
-2. Or add a **secure test-mode endpoint** to your server:
-
-   * Enabled only in non-production/test mode (`TEST_MODE` env var).
-   * Requires a secret header, e.g. `x-test-token: <secret>` set via env var.
-   * Bound to `127.0.0.1` only.
-   * Has strict rate-limiting and logging.
-   * Remove or disable after testing.
-
-3. Log all test activity and audit after tests.
-
-I can help you implement a secure test-mode endpoint if needed.
 
 ---
 
