@@ -186,6 +186,12 @@ node crack2.js <username> <maxlen>
 node crack2.js test 4
 ```
 
+```bash
+node crack3.js <username> <mode>
+# e.g.
+node crack3.js test rainbow
+```
+
 This approach is safe for demonstrations and class assignments because it does not send guesses over the network to external targets.
 
 ---
@@ -196,6 +202,7 @@ The `attacks/` folder contains example scripts that illustrate:
 
 * candidate generation (charset iteration)
 * dictionary mutation techniques
+* rainbow table hash generation
 
 **Important:** Those scripts are for educational analysis only. **Do not** run them against remote systems you do not own or have explicit permission to test.
 
