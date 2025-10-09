@@ -5,7 +5,7 @@ const port = 3000;
 
 app.use(express.json());
 
-const users = JSON.parse(fs.readFileSync('C:/Users/frederik/WebstormProjects/BruteForce/TEST_DATA/users.json', 'utf8'));
+const users = JSON.parse(fs.readFileSync('TEST_DATA/users.json', 'utf8'));
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
     const user = users.find(u => u.username === username && u.password === password);
