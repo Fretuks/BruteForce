@@ -5,21 +5,15 @@ const app = express();
 const port = 3000;
 const axios = require('axios');
 const HCAPTCHA_SECRET = '0x0000000000000000000000000000000000000000';
-
 app.use(express.json());
-
 const LOG_FILE = path.join(__dirname, 'login.log');
-const users = JSON.parse(fs.readFileSync('C:/Users/frederik/WebstormProjects/BruteForce/TEST_DATA/users.json', 'utf8'));
-
-// Konfiguration
-const LINEAR_DELAY_MS = 1000; // 1s
-const PROGRESSIVE_DELAYS = [10000, 60000, 300000]; // 10s, 1min, 5min
+const users = JSON.parse(fs.readFileSync('TEST_DATA/users.json', 'utf8'));
+const LINEAR_DELAY_MS = 1000;
+const PROGRESSIVE_DELAYS = [10000, 60000, 300000];
 const LOCKOUT_THRESHOLD = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 Minuten
+const LOCKOUT_DURATION = 15 * 60 * 1000;
+const loginAttempts = {};
 
-const loginAttempts = {}; // { username: { count, lockedUntil, lastFail, requiresCaptcha } }
-
-// Logging-Funktion
 function logAttempt(username, status, ip, extra = '') {
     const timestamp = new Date().toISOString();
     const logLine = `[${timestamp}] [${ip}] [${username}] [${status}] ${extra}\n`;
@@ -30,10 +24,8 @@ function logAttempt(username, status, ip, extra = '') {
 app.post('/login', async (req, res) => {
     const { username, password, captcha } = req.body;
     const ip = req.ip || req.connection.remoteAddress;
-
     const user = users.find(u => u.username === username && u.password === password);
     const now = Date.now();
-
     // Init
     if (!loginAttempts[username]) {
         loginAttempts[username] = {

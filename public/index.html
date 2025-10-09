@@ -134,6 +134,7 @@
             } else {
                 msg.textContent = '❌ ' + (data.error || 'Login fehlgeschlagen');
                 msg.className = 'msg error';
+                msg.style.display = 'block';
                 if (data.requiresCaptcha) {
                     captchaContainer.style.display = 'block';
                     hcaptcha.reset();

