@@ -11,7 +11,7 @@ app.post('/login', (req, res) => {
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
         res.status(200);
-        res.send('Login erfolgreich');
+        res.json({ ok: true, message: 'Login erfolgreich' });
     } else {
         res.status(401).send('Falscher Benutzername oder Passwort');
     }

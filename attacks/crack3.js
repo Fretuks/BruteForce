@@ -123,6 +123,7 @@ async function bruteForceAttack(username, charset, maxLen, instanceId, totalInst
         if (tested % 1000 === 0) {
             process.stdout.write(`\rBrute-Force Versuche: ${tested}`);
         }
+        process.stdout.write(`\rTrying candidate: ${candidate}`);
     }
     console.log(`\nBrute Force abgeschlossen: ${tested} Kombinationen getestet`);
 }
@@ -197,8 +198,8 @@ if (!USERNAME) {
         await tryWithRainbowTable(USERNAME, rainbowTable);
     } else if (MODE === 'bruteforce') {
         console.log(`Instance: ${instanceId + 1}/${totalInstances}`);
-        const charset = '0123456789abcdefghijklmnopqrstuvwxyz'.split('');
-        const maxLen = 6;
+        const charset = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;:,.<>?'.split('');
+        const maxLen = 20;
         await bruteForceAttack(USERNAME, charset, maxLen, instanceId, totalInstances);
     } else {
         console.error(`Unbekannter Mode: ${MODE}`);
