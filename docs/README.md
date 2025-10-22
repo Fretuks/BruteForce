@@ -1,55 +1,54 @@
 # BruteForce — Demo Project
 
-> Small educational demo showing a tiny login backend, simple frontend, and several local-only attack/defense experiments.
+> Small educational demo showing a minimal login backend, basic frontend, and **five** brute-force attack scripts for safe, local testing and security education.
 
-> **Important:** This repository is for learning **only**. Do **not** use the included attack scripts against systems you do not own or explicitly have written permission to test. See **Safety & Ethics** below.
+> **This is for educational use only. Never attack systems without explicit permission.**
 
 ---
 
 ## Table of contents
 
-* [Overview](#overview)
-* [Prerequisites](#prerequisites)
-* [Install](#install)
-* [Project structure](#project-structure)
-* [Expected `users.json` formats](#expected-usersjson-formats)
-* [Run the demo server (naive login)](#run-the-demo-server-naive-login)
-* [Create users (plaintext and bcrypt)](#create-users-plaintext-and-bcrypt)
-* [Safe testing — local simulation (recommended)](#safe-testing--local-simulation-recommended)
-* [Attacks folder — ethical warning](#attacks-folder--ethical-warning)
-* [Security & Ethics (must read)](#security--ethics-must-read)
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Install](#install)
+- [Project structure](#project-structure)
+- [Expected `users.json` formats](#expected-usersjson-formats)
+- [Run the demo server](#run-the-demo-server)
+- [Create users](#create-users)
+- [Safe testing (recommended)](#safe-testing-recommended)
+- [Attack scripts](#attack-scripts)
+- [Security & Ethics (must read)](#security--ethics-must-read)
 
 ---
 
 ## Overview
 
-This repository demonstrates:
+This project demonstrates:
 
-* a minimal Express login server (naive password check)
-* a simple static frontend (`index.html`) that posts login credentials
-* educational scripts showing brute-force concepts, dictionary mutations and a *local-only* simulation harness for safe demonstrations
-* suggestions and code examples for defensive measures (rate limiting, progressive delay, lockout, bcrypt)
-
-This is intended for classroom use only.
+- A minimal Express-based login backend
+- A static frontend with form-based login
+- Five Node.js scripts simulating brute-force/dictionary/rainbow attacks
+- Local-only and safe multi-instance testing
+- User/password storage in plaintext and bcrypt
+- Clear separation between demo functionality and security attack simulation
 
 ---
 
 ## Prerequisites
 
-* Node.js (v14+ recommended) and `npm`
-* Terminal / command line
+- Node.js (v14+)
+- `npm`
+- Terminal (or PowerShell)
 
 ---
 
 ## Install
 
-Clone or copy the repository, then install dependencies:
-
 ```bash
 npm install
-```
+````
 
-If additional packages are required by specific scripts (e.g. `node-fetch`, `bcryptjs`, `express-rate-limit`, `morgan`), install them as needed:
+If missing packages cause errors, install them explicitly:
 
 ```bash
 npm install bcryptjs node-fetch express express-rate-limit morgan fs-extra
@@ -61,157 +60,206 @@ npm install bcryptjs node-fetch express express-rate-limit morgan fs-extra
 
 ```
 BruteForce/
-├─ .idea/
 ├─ attacks/
-│  ├─ crack.js
-│  ├─ crack2.js
-│  └─ dictionary.txt
-├─ docs/
-│  └─ README.md   <- (this file)
+│  ├─ crack.js        # Mono charset brute force
+│  ├─ crack2.js       # Dictionary + mutations
+│  ├─ crack3.js       # Rainbow table
+│  ├─ crack4.js       # Parallel brute force
+│  ├─ crack5.js       # Hybrid attack framework
+│  ├─ dictionary.txt
+│  ├─ rainbow_table.json
+│  └─ wordlist.txt
 ├─ public/
-│  ├─ Backend.js   <- naive Express server
-│  └─ index.html   <- simple login page
+│  ├─ Backend.js      # Express server
+│  └─ index.html      # Login form
 ├─ TEST_DATA/
 │  └─ users.json
-├─ package.json
-└─ package-lock.json
+├─ docs/
+│  └─ README.md       # This file
+└─ package.json
 ```
 
 ---
 
 ## Expected `users.json` formats
 
-The code in this repo expects one of the following formats. If scripts report `USER_NOT_FOUND`, check your JSON shape.
-
-**Preferred (object with `users` array):**
+### Preferred structure:
 
 ```json
 {
   "users": [
-    { "username": "test", "password": "test" }
+    { "username": "alice", "password": "plaintext" },
+    { "username": "bob", "passwordHash": "$2a$10$..." }
   ]
 }
 ```
 
-**Alternate (array of users):**
-
-```json
-[
-  { "username": "test", "password": "test" },
-  { "username": "alice", "passwordHash": "$2a$10$..." }
-]
-```
-
-Fields used by scripts:
-
-* `username` — string
-* `password` — plaintext (demo only)
-* `passwordHash` — bcrypt hash (recommended for demo realism)
-
 ---
 
-## Run the demo server (naive login)
-
-> This demo server reads `TEST_DATA/users.json`. By default the example server is intentionally minimal.
-
-Start the server:
+## Run the demo server
 
 ```bash
 node public/Backend.js
 ```
 
-Open the demo frontend in your browser:
-
-```
-http://localhost:3000/login
-```
-
-The page sends a JSON `POST`:
-
-```json
-{ "username": "test", "password": "test" }
-```
+Visit: `http://localhost:3000/login`
 
 ---
 
 ## Create users
 
-### Plaintext users (demo only)
+### Option 1: Plaintext (demo only)
 
-Edit `TEST_DATA/users.json` and add user objects in the expected format.
+Edit `users.json` manually.
 
-**Warning:** Do **not** store plaintext passwords in production.
-
-### Bcrypt (preferred for demos)
-
-Generate a bcrypt hash and store it as `passwordHash`:
+### Option 2: Hashed (recommended)
 
 ```bash
-node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1]) S3cret!"
+node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1])" "S3cret!"
 ```
 
-Then in `users.json`:
-
-```json
-{
-  "users": [
-    { "username": "alice", "passwordHash": "$2a$10$..." }
-  ]
-}
-```
-
-If your server code performs `bcrypt.compare`, it will validate hashed passwords.
+Then insert the hash into `users.json` under `passwordHash`.
 
 ---
 
-## Safe testing — local simulation (recommended)
+## Safe testing (recommended)
 
-To explore brute-force behavior **safely**, use a local simulation harness that calls the login logic in-process (no network requests). This demonstrates:
+All attacks simulate authentication attempts **locally** and do not target remote systems.
 
-* progressive delay (server-side slowing)
-* account lockout after repeated failures
-* performance metrics (attempts/s) against a local hash
+---
 
-Example usage:
+## Attack Scripts
+
+### 1. `crack.js` – Mono-Zeichensatz Brute Force
+
+**Simulates:**
+
+* Pure brute force using a restricted character set (`digits`, `lower`, `upper`)
+* Exhaustive search up to configurable length
 
 ```bash
 node crack.js <username> <charset> <maxlen>
-# e.g.
-node crack.js test digits 4
 ```
+
+Example:
 
 ```bash
-node crack2.js <username> <maxlen>
-# e.g.
-node crack2.js test 4
+node crack.js alice digits 4
 ```
-
-```bash
-node crack3.js <username> <mode>
-# e.g.
-node crack3.js test rainbow
-```
-
-This approach is safe for demonstrations and class assignments because it does not send guesses over the network to external targets.
 
 ---
 
-## `attacks/` folder — ethical warning
+### 2. `crack2.js` – Dictionary + Mutation Attack
 
-The `attacks/` folder contains example scripts that illustrate:
+**Simulates:**
 
-* candidate generation (charset iteration)
-* dictionary mutation techniques
-* rainbow table hash generation
+* Dictionary-based password guessing
+* Case variants, common suffixes, and leetspeak
+* Limited to local dictionary and mutation rules
 
-**Important:** Those scripts are for educational analysis only. **Do not** run them against remote systems you do not own or have explicit permission to test.
+```bash
+node crack2.js <username> <maxlen>
+```
+
+---
+
+### 3. `crack3.js` – Rainbow Table
+
+**Simulates:**
+
+* Use of precomputed hash-password maps
+* Includes script for building a rainbow table from a dictionary
+
+```bash
+node crack3.js <username> rainbow
+node crack3.js <username> create     # To build rainbow table
+```
+
+---
+
+### 4. `crack4.js` – Parallel Brute Force
+
+**Simulates:**
+
+* Brute-force attack split across multiple instances
+* Each instance works on a portion of the keyspace
+
+```bash
+node crack4.js <username> bruteforce <instanceId> <totalInstances>
+```
+
+Example (Instance 2 of 4):
+
+```bash
+node crack4.js alice bruteforce 1 4
+```
+
+---
+
+### 5. `crack5.js` – Hybrid Framework (Full Simulation Suite)
+
+**Simulates:**
+
+* Dictionary + Rainbow + Brute-force
+* Multi-instance parallelism
+* Shared state file to halt on success
+* Tracks stats, request speed, response time, success/failure logs
+* Also supports username enumeration
+
+```bash
+node crack5.js <username> <mode> <instanceId> <totalInstances>
+```
+
+Modes:
+
+* `dictionary`
+* `bruteforce`
+* `rainbow`
+* `create-table`
+* `enumerate`
+* `hybrid` (dictionary → brute-force)
+
+Example:
+
+```bash
+node crack5.js admin hybrid 0 4
+```
 
 ---
 
 ## Security & Ethics (must read)
 
-* These materials are for **educational** purposes only.
-* Creating or running automated tools that attempt to access systems without authorization is illegal in many jurisdictions and ethically wrong.
-* Never use the attack scripts on systems you do not own or explicitly have permission to test.
-* Prefer the local simulation or secure test-mode endpoint for demonstrations and grading.
-* Remove any test credentials and disable test endpoints after you finish.
+> **DO NOT** use any attack scripts against systems you do not own.
+
+* These tools are **for learning and classroom use only**
+* Use only against the demo server or authorized systems
+* Violating ethical guidelines or legal boundaries may lead to severe consequences
+* When in doubt, ask for explicit permission before testing
+
+---
+
+## PowerShell: Launch Parallel Instances (Example)
+
+```powershell
+$WorkingDir = "C:\Users\your_username\your_project_folder\BruteForce\attacks"  #
+
+for ($i = 0; $i -lt 10; $i++) {
+    $cmd = "Set-Location -Path `"$WorkingDir`"; node crack5.js test hybrid $i 10"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $cmd
+    Start-Sleep -Milliseconds 100
+}
+```
+Execute powershell script locally:
+```
+powershell -ExecutionPolicy Bypass -File "C:\Users\your_username\your_project_folder\BruteForce\attacks\open_10_terminals_windows.ps1"
+```
+
+---
+
+## ✅ Final Notes
+
+* `crack5.js` is the most advanced and recommended for robust demos
+* Use the naive server (`Backend.js`) for all testing
+* Monitor server logs and browser output during attacks
+
+```
