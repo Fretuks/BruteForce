@@ -22,22 +22,20 @@ function logAttempt(username, status, ip, extra = '') {
 }
 
 app.post('/login', async (req, res) => {
-    const { username, password, captcha } = req.body;
+    const {username, password, captcha} = req.body;
     const ip = req.ip || req.connection.remoteAddress;
     const user = users.find(u => u.username === username && u.password === password);
     const now = Date.now();
-    // Init
     if (!loginAttempts[username]) {
         loginAttempts[username] = {
             count: 0,
             lockedUntil: null,
             lastFail: null,
-            requiresCaptcha: false
+            requiresCaptcha: false,
+            cooldownUntil: null
         };
     }
     const state = loginAttempts[username];
-
-    // Lockout prüfen
     if (state.lockedUntil && now < state.lockedUntil) {
         const remaining = Math.ceil((state.lockedUntil - now) / 1000);
         logAttempt(username, 'LOCKED', ip, `Noch gesperrt: ${remaining}s`);
@@ -46,7 +44,15 @@ app.post('/login', async (req, res) => {
             error: `Benutzer gesperrt. Bitte in ${remaining}s erneut versuchen.`
         });
     }
-
+    if (state.cooldownUntil && now < state.cooldownUntil) {
+        const remaining = Math.ceil((state.cooldownUntil - now) / 1000);
+        logAttempt(username, 'COOLDOWN', ip, `Wartezeit noch ${remaining}s`);
+        return res.status(429).json({
+            ok: false,
+            error: `Bitte ${remaining}s warten, bevor du es erneut versuchst.`,
+            requiresCaptcha: state.requiresCaptcha
+        });
+    }
     if (state.requiresCaptcha) {
         if (!captcha || typeof captcha !== 'string') {
             logAttempt(username, 'CAPTCHA_MISSING', ip);
@@ -56,7 +62,6 @@ app.post('/login', async (req, res) => {
                 requiresCaptcha: true
             });
         }
-
         try {
             const verify = await axios.post(
                 'https://hcaptcha.com/siteverify',
@@ -66,7 +71,6 @@ app.post('/login', async (req, res) => {
                     remoteip: req.ip
                 })
             );
-
             if (!verify.data.success) {
                 logAttempt(username, 'CAPTCHA_FAIL', ip);
                 return res.status(403).json({
@@ -84,20 +88,17 @@ app.post('/login', async (req, res) => {
             });
         }
     }
-
-    // Erfolg
     if (user) {
-        loginAttempts[username] = undefined;
+        delete loginAttempts[username];
         logAttempt(username, 'SUCCESS', ip);
-        return res.json({ ok: true, message: 'Login erfolgreich' });
+        return res.json({ok: true, message: 'Login erfolgreich'});
     }
-
-    // Fehlversuch
     state.count++;
     state.lastFail = now;
     logAttempt(username, 'FAIL', ip, `Fehlversuche: ${state.count}`);
-
-    // Lockout nach Schwelle
+    if (state.count >= 3) {
+        state.requiresCaptcha = true;
+    }
     if (state.count >= LOCKOUT_THRESHOLD) {
         state.lockedUntil = now + LOCKOUT_DURATION;
         state.count = 0;
@@ -107,16 +108,8 @@ app.post('/login', async (req, res) => {
             error: `Zu viele Fehlversuche. Benutzer für 15 Minuten gesperrt.`
         });
     }
-
-    // Captcha aktivieren nach 3 Fehlversuchen
-    if (state.count >= 3) {
-        state.requiresCaptcha = true;
-    }
-
-    // Verzögerung anwenden
     const delay = PROGRESSIVE_DELAYS[state.count - 1] || LINEAR_DELAY_MS;
-    await new Promise(r => setTimeout(r, delay));
-
+    state.cooldownUntil = now + delay;
     return res.status(401).json({
         ok: false,
         error: `Falscher Benutzername oder Passwort. Wartezeit: ${delay / 1000}s`,
@@ -124,7 +117,6 @@ app.post('/login', async (req, res) => {
     });
 });
 
-// Einfaches Frontend für Tests
 app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
