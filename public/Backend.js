@@ -26,7 +26,6 @@ app.post('/login', async (req, res) => {
     const ip = req.ip || req.connection.remoteAddress;
     const user = users.find(u => u.username === username && u.password === password);
     const now = Date.now();
-
     if (!loginAttempts[username]) {
         loginAttempts[username] = {
             count: 0,
@@ -36,10 +35,7 @@ app.post('/login', async (req, res) => {
             cooldownUntil: null
         };
     }
-
     const state = loginAttempts[username];
-
-    // 🔹 Lockout aktiv?
     if (state.lockedUntil && now < state.lockedUntil) {
         const remaining = Math.ceil((state.lockedUntil - now) / 1000);
         logAttempt(username, 'LOCKED', ip, `Noch gesperrt: ${remaining}s`);
@@ -48,8 +44,6 @@ app.post('/login', async (req, res) => {
             error: `Benutzer gesperrt. Bitte in ${remaining}s erneut versuchen.`
         });
     }
-
-    // 🔹 Cooldown aktiv?
     if (state.cooldownUntil && now < state.cooldownUntil) {
         const remaining = Math.ceil((state.cooldownUntil - now) / 1000);
         logAttempt(username, 'COOLDOWN', ip, `Wartezeit noch ${remaining}s`);
@@ -59,8 +53,6 @@ app.post('/login', async (req, res) => {
             requiresCaptcha: state.requiresCaptcha
         });
     }
-
-    // 🔹 Captcha-Prüfung (falls aktiv)
     if (state.requiresCaptcha) {
         if (!captcha || typeof captcha !== 'string') {
             logAttempt(username, 'CAPTCHA_MISSING', ip);
@@ -125,7 +117,6 @@ app.post('/login', async (req, res) => {
     });
 });
 
-// Einfaches Frontend für Tests
 app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
