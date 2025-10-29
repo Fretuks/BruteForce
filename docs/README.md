@@ -29,7 +29,7 @@ This project demonstrates:
 
   * Brute-force (`crack.js`)
   * Dictionary + mutation (`crack2.js`)
-  * Rainbow table (`crack3.js --mode create/rainbow`)
+  * Rainbow table (`crack3.js`)
 * Safe **local testing environment**
 
 ## Prerequisites
