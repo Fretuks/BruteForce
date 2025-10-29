@@ -146,7 +146,7 @@ node attacks/crack.js alice mixed 4
 
 ---
 
-### 2. `attacker.js` — Personal Data Dictionary + Mutations
+### 2. `crack2.js` — Personal Data Dictionary + Mutations
 
 **Simulates:**
 
@@ -162,26 +162,35 @@ node attacks/crack2.js <username>
 
 ---
 
-### 3. `attacker.js` — Rainbow Table Mode
+### 3. `crack3.js` — Rainbow Table Mode + Parallel Instances
 
 Build and use precomputed hash-password maps.
 
 **Create table:**
 
 ```bash
-node attacks/crack3.js admin create
+node attacks/crack3.js <username> create
 ```
 
 **Use table:**
 
 ```bash
-node attacks/crack3.js admin rainbow
+node attacks/crack3.js <username> rainbow
 ```
 
 Rainbow tables are stored as:
 
 ```
 attacks/rainbow_table.json
+```
+
+**Parallel Instances:**
+
+```bash
+node attacker.js <username> bruteforce 0 4    # Instanz 1 von 4
+node attacker.js <username> bruteforce 1 4    # Instanz 2 von 4
+node attacker.js <username> bruteforce 2 4    # Instanz 3 von 4
+node attacker.js <username> bruteforce 3 4    # Instanz 4 von 4
 ```
 
 ## Security & Ethics (Must Read)
