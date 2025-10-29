@@ -1,4 +1,18 @@
-﻿const fs = require('fs');
+﻿/*
+Filename: crack2.js
+Kurzbeschreibung:
+  Wörterbuchbasierter Brute-Force-Angreifer mit Mutationen (Leet, Groß-/Kleinschreibung, Suffixe).
+  Liest optional dictionary.txt und testet abgewandelte Passwortvarianten gegen den lokalen Login-Endpunkt.
+  Enthält zusätzlich eine Fallback-Brute-Force-Funktion (Mono-Charset, kurze Länge) für den Notfall.
+Aufrufparameter:
+  node crack2.js <username>
+Autor:
+  Frederik, Kian
+Datum:
+  29.10.2025
+*/
+
+const fs = require('fs');
 const path = require('path');
 const fetch = global.fetch || require('node-fetch');
 const TARGET_URL = 'http://localhost:3000/login';
