@@ -34,7 +34,7 @@ This project demonstrates:
 
 ## Prerequisites
 
-* Node.js ≥ 16
+* Node.js ≥ 18
 * npm
 * Terminal or PowerShell
 
