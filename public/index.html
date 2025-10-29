@@ -120,9 +120,8 @@
                 msg.textContent = '✅ Erfolgreich eingeloggt!';
                 msg.className = 'msg success';
             } else {
-                msg.textContent = '❌ ' + (data.error || 'Login fehlgeschlagen');
-                msg.className = 'msg error';
-                msg.style.display = 'block';
+            msg.textContent = '❌ ' + (data.error || 'Login fehlgeschlagen');
+            msg.className = 'msg error';
             }
         } catch (err) {
             msg.textContent = '⚠️ Netzwerkfehler: ' + err.message;

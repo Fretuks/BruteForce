@@ -7,13 +7,13 @@ app.use(express.json());
 
 const users = JSON.parse(fs.readFileSync('TEST_DATA/users.json', 'utf8'));
 app.post('/login', (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
+
     if (user) {
-        res.status(200);
-        res.json({ ok: true, message: 'Login erfolgreich' });
+        res.status(200).json({ ok: true, message: 'Login erfolgreich' });
     } else {
-        res.status(401).send('Falscher Benutzername oder Passwort');
+        res.status(401).json({ ok: false, error: 'Falscher Benutzername oder Passwort' });
     }
 });
 
