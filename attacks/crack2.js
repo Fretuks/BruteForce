@@ -1,26 +1,23 @@
-﻿/**
- * Intelligenter Dictionary-basierter Password Cracker
- *
- * Dieses Skript kombiniert mehrere Angriffstechniken:
- * 1. Wörterbuch-Angriff mit Mutationen
- * 2. Leetspeak-Varianten
- * 3. Groß-/Kleinschreibungs-Varianten
- * 4. Brute-Force als Fallback
- *
- * WARNUNG: Nur für autorisierte Penetrationstests verwenden!
- * Unbefugte Verwendung ist illegal und strafbar.
- */
+/*
+Filename: crack2.js
+Kurzbeschreibung:
+  Wörterbuchbasierter Brute-Force-Angreifer mit Mutationen (Leet, Groß-/Kleinschreibung, Suffixe).
+  Liest optional dictionary.txt und testet abgewandelte Passwortvarianten gegen den lokalen Login-Endpunkt.
+  Enthält zusätzlich eine Fallback-Brute-Force-Funktion (Mono-Charset, kurze Länge) für den Notfall.
+Aufrufparameter:
+  node crack2.js <username>
+Autor:
+  Frederik, Kian
+Datum:
+  29.10.2025
+*/
 
 const fs = require('fs');
 const path = require('path');
 const fetch = global.fetch || require('node-fetch');
-
-// Konfigurationskonstanten
-const TARGET_URL = 'http://localhost:3000/login';  // Ziel-Login-Endpoint
-const DICT_PATH = path.resolve(__dirname, 'dictionary.txt');  // Pfad zur Wörterbuch-Datei
-const MAX_TRIES = 20000000;  // Maximale Anzahl an Versuchen
-
-// Globaler Flag, ob Passwort gefunden wurde
+const TARGET_URL = 'http://localhost:3000/login';
+const DICT_PATH = path.resolve(__dirname, 'dictionary.txt');
+const MAX_TRIES = 20000000;
 let found = false;
 
 /**

@@ -1,4 +1,28 @@
-﻿const fs = require('fs');
+/*
+Filename: crack3.js
+Kurzbeschreibung:
+  Kombiniertes Angriffstool mit drei Modi:
+    - create: erstellt eine Rainbow Table aus einer wordlist.txt
+    - rainbow: nutzt eine bestehende Rainbow Table für den Angriff
+    - bruteforce: führt einen verteilten Brute-Force-Angriff aus (parallelisierbar über mehrere Instanzen)
+  Das Tool unterstützt parallele Angriffe und das Laden/Speichern von Rainbow Tables.
+Aufrufparameter:
+  node crack3.js <username> <mode> [instanceId] [totalInstances]
+  Modes:
+    rainbow    - Rainbow Table Angriff
+    bruteforce - Brute Force Angriff (parallelisierbar)
+    create     - Erstelle Rainbow Table aus wordlist.txt
+Beispiele:
+  node crack3.js admin rainbow
+  node crack3.js admin bruteforce 0 4
+  node crack3.js admin create
+Autor:
+  Frederik, Kian
+Datum:
+  29.10.2025
+*/
+
+const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const fetch = global.fetch || require('node-fetch');

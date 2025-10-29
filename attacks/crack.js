@@ -1,4 +1,18 @@
-﻿function usage() {
+﻿/*
+Filename: crack.js
+Kurzbeschreibung:
+  Einfaches, lokales Mono-Alphabet Brute-Force Script.
+  Generiert systematisch alle Kombinationen aus einem Charset und testet sie gegen /login auf localhost.
+Aufrufparameter:
+  node crack.js <username> <charset> <maxlen>
+  charset: digits | lower | upper
+Autor:
+  Frederik, Kian
+Datum:
+  29.10.2025
+*/
+
+function usage() {
     console.log('Usage: node crack.js <username> <charset> <maxlen>');
     console.log(' charset: digits | lower | upper | symbols | mixed');
     process.exit(1);

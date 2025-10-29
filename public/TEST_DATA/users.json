@@ -1,10 +1,21 @@
 [
   {
     "username": "test",
-    "password": "test1"
+    "password": "test"
   },
+
   {
-    "username": "admin",
-    "password": "admin"
+    "username": "caps",
+    "password": "QWERTYUIOP"
+  },
+
+  {
+    "username": "numbers",
+    "password": "4938271056"
+  },
+
+  {
+    "username": "lower",
+    "password": "abcdefghij"
   }
 ]
