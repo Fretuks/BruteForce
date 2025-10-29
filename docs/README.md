@@ -1,44 +1,42 @@
 # BruteForce — Demo Project
 
-> Small educational demo showing a minimal login backend, basic frontend, and **five** brute-force attack scripts for safe, local testing and security education.
+> **Educational-only project** showing how login systems can be hardened against brute-force, dictionary, and rainbow-table attacks.
+> Includes backend, frontend, and multiple safe attack simulations — all running **locally**.
 
-> **This is for educational use only. Never attack systems without explicit permission.**
+**Never test against external or real systems.**
+This demo is strictly for **security education and local testing**.
 
----
+## Table of Contents
 
-## Table of contents
-
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Install](#install)
-- [Project structure](#project-structure)
-- [Expected `users.json` formats](#expected-usersjson-formats)
-- [Run the demo server](#run-the-demo-server)
-- [Create users](#create-users)
-- [Safe testing (recommended)](#safe-testing-recommended)
-- [Attack scripts](#attack-scripts)
-- [Security & Ethics (must read)](#security--ethics-must-read)
-
----
+* [Overview](#overview)
+* [Prerequisites](#prerequisites)
+* [Install](#install)
+* [Structure](#project-structure)
+* [Expected user data](#expected-user-data)
+* [Run demo backend](#run-demo-backend)
+* [Create users](#create-users)
+* [Attack scripts](#attack-scripts)
+* [Security & Ethics](#security--ethics-must-read)
 
 ## Overview
 
 This project demonstrates:
 
-- A minimal Express-based login backend
-- A static frontend with form-based login
-- Five Node.js scripts simulating brute-force/dictionary/rainbow attacks
-- Local-only and safe multi-instance testing
-- User/password storage in plaintext and bcrypt
-- Clear separation between demo functionality and security attack simulation
+* Minimal **Express-based login backend**
+* **Modern login UI** with clear error messages
+* **UTF-8 Unicode charset support**
+* Attack simulations for:
 
----
+  * Brute-force (`crack.js`)
+  * Dictionary + mutation (`crack2.js`)
+  * Rainbow table (`crack3.js --mode create/rainbow`)
+* Safe **local testing environment**
 
 ## Prerequisites
 
-- Node.js (v14+)
-- `npm`
-- Terminal (or PowerShell)
+* Node.js ≥ 16
+* npm
+* Terminal or PowerShell
 
 ---
 
@@ -46,220 +44,165 @@ This project demonstrates:
 
 ```bash
 npm install
-````
+```
 
-If missing packages cause errors, install them explicitly:
+If some packages are missing:
 
 ```bash
-npm install bcryptjs node-fetch express express-rate-limit morgan fs-extra
+npm install express node-fetch bcryptjs fs-extra morgan express-rate-limit
 ```
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
 BruteForce/
 ├─ attacks/
-│  ├─ crack.js        # Mono charset brute force
-│  ├─ crack2.js       # Dictionary + mutations
-│  ├─ crack3.js       # Rainbow table
-│  ├─ crack4.js       # Parallel brute force
-│  ├─ crack5.js       # Hybrid attack framework
-│  ├─ dictionary.txt
-│  ├─ rainbow_table.json
-│  └─ wordlist.txt
+│  ├─ crack.js              # Extended charset brute-force attack
+│  ├─ crack2.js             # Dictionary + personal data mutation attack
+│  ├─ crack3.js             # Rainbow Table + Parallel Instances attack
+│  ├─ rainbow_table.json    # Optional precomputed hashes
+│  └─ dictionary.txt        # Optional extra words
 ├─ public/
-│  ├─ Backend.js      # Express server
-│  └─ index.html      # Login form
-├─ TEST_DATA/
-│  └─ users.json
+│  ├─ Backend.js            # Express backend
+│  ├─ index.html            # Modern login UI
+│  └─ TEST_DATA/
+│     └─ users.json         # Local user database
 ├─ docs/
-│  └─ README.md       # This file
+│  └─ README.md             # This file
 └─ package.json
 ```
 
 ---
 
-## Expected `users.json` formats
+## Expected User Data
 
-### Preferred structure:
+**`TEST_DATA/users.json`**
 
 ```json
-{
-  "users": [
-    { "username": "alice", "password": "plaintext" },
-    { "username": "bob", "passwordHash": "$2a$10$..." }
-  ]
-}
+[
+  { "username": "test", "password": "test1" },
+  { "username": "admin", "password": "admin" }
+]
 ```
 
 ---
 
-## Run the demo server
+## Run Demo Backend
 
 ```bash
 node public/Backend.js
 ```
 
-Visit: `http://localhost:3000/login`
+Visit [http://localhost:3000/login](http://localhost:3000/login)
 
 ---
 
-## Create users
+## Create Users
 
-### Option 1: Plaintext (demo only)
+### Option 1: Plaintext
 
-Edit `users.json` manually.
+Edit `TEST_DATA/users.json` manually.
 
-### Option 2: Hashed (recommended)
+### Option 2: Hashed (using bcrypt)
 
 ```bash
-node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1])" "S3cret!"
+node -e "const bcrypt=require('bcryptjs');(async(p)=>console.log(await bcrypt.hash(p,10)))(process.argv[1])" "MyS3cret!"
 ```
 
-Then insert the hash into `users.json` under `passwordHash`.
+## Safe Testing
 
----
-
-## Safe testing (recommended)
-
-All attacks simulate authentication attempts **locally** and do not target remote systems.
-
----
+All attacks operate **only against the local server** (`localhost:3000/login`).
 
 ## Attack Scripts
 
-### 1. `crack.js` – Mono-Zeichensatz Brute Force
+### 1. `crack.js` — Brute-Force (UTF-8 / Extended Charset)
 
 **Simulates:**
 
-* Pure brute force using a restricted character set (`digits`, `lower`, `upper`)
-* Exhaustive search up to configurable length
+* Systematic password search using configurable character sets
+* Full Mono-Alphabet support (lowercase, uppercase, numbers, symbols)
 
 ```bash
-node crack.js <username> <charset> <maxlen>
+node attacks/crack.js <username> <charset> <maxlen>
 ```
+
+#### Available charsets:
+
+| Name      | Characters included                    |          |
+| --------- | -------------------------------------- | -------- |
+| `digits`  | `0123456789`                           |          |
+| `lower`   | `abcdefghijklmnopqrstuvwxyz`           |          |
+| `upper`   | `ABCDEFGHIJKLMNOPQRSTUVWXYZ`           |          |
+| `symbols` | `!@#$%^&*()_+-=[]{}                    | ;:,.<>?` |
+| `mixed`   | Letters, numbers, and symbols combined |          |
 
 Example:
 
 ```bash
-node crack.js alice digits 4
+node attacks/crack.js alice mixed 4
 ```
 
 ---
 
-### 2. `crack2.js` – Dictionary + Mutation Attack
+### 2. `attacker.js` — Personal Data Dictionary + Mutations
 
 **Simulates:**
 
-* Dictionary-based password guessing
-* Case variants, common suffixes, and leetspeak
-* Limited to local dictionary and mutation rules
+* Leetspeak, capitalization, and year/suffix mutations
+* Smart combinations of known info (email, name, birth year)
+* Optional fallback to full Unicode brute-force
+
+Run:
 
 ```bash
-node crack2.js <username> <maxlen>
+node attacks/crack2.js <username>
 ```
 
 ---
 
-### 3. `crack3.js` – Rainbow Table
+### 3. `attacker.js` — Rainbow Table Mode
 
-**Simulates:**
+Build and use precomputed hash-password maps.
 
-* Use of precomputed hash-password maps
-* Includes script for building a rainbow table from a dictionary
-
-```bash
-node crack3.js <username> rainbow
-node crack3.js <username> create     # To build rainbow table
-```
-
----
-
-### 4. `crack4.js` – Parallel Brute Force
-
-**Simulates:**
-
-* Brute-force attack split across multiple instances
-* Each instance works on a portion of the keyspace
+**Create table:**
 
 ```bash
-node crack4.js <username> bruteforce <instanceId> <totalInstances>
+node attacks/crack3.js admin create
 ```
 
-Example (Instance 2 of 4):
+**Use table:**
 
 ```bash
-node crack4.js alice bruteforce 1 4
+node attacks/crack3.js admin rainbow
 ```
 
----
+Rainbow tables are stored as:
 
-### 5. `crack5.js` – Hybrid Framework (Full Simulation Suite)
-
-**Simulates:**
-
-* Dictionary + Rainbow + Brute-force
-* Multi-instance parallelism
-* Shared state file to halt on success
-* Tracks stats, request speed, response time, success/failure logs
-* Also supports username enumeration
-
-```bash
-node crack5.js <username> <mode> <instanceId> <totalInstances>
+```
+attacks/rainbow_table.json
 ```
 
-Modes:
+## Security & Ethics (Must Read)
 
-* `dictionary`
-* `bruteforce`
-* `rainbow`
-* `create-table`
-* `enumerate`
-* `hybrid` (dictionary → brute-force)
+> **Use only in a controlled, local environment.**
 
-Example:
+* Never attack networks or systems without written consent.
+* Brute-force attacks, even educational ones, can **cause denial-of-service** if misused.
+* This repository is intended for **learning, classroom demonstrations, and security testing**.
 
-```bash
-node crack5.js admin hybrid 0 4
-```
-
----
-
-## Security & Ethics (must read)
-
-> **DO NOT** use any attack scripts against systems you do not own.
-
-* These tools are **for learning and classroom use only**
-* Use only against the demo server or authorized systems
-* Violating ethical guidelines or legal boundaries may lead to severe consequences
-* When in doubt, ask for explicit permission before testing
-
----
-
-## PowerShell: Launch Parallel Instances (Example)
+## PowerShell Example — Parallel Testing
 
 ```powershell
-$WorkingDir = "C:\Users\your_username\your_project_folder\BruteForce\attacks"  #
-
-for ($i = 0; $i -lt 10; $i++) {
-    $cmd = "Set-Location -Path `"$WorkingDir`"; node crack5.js test hybrid $i 10"
+$Dir = "C:\BruteForce\attacks"
+for ($i = 0; $i -lt <number_of_instances>; $i++) {
+    $cmd = "Set-Location `"$Dir`"; node <file_name>.js <username> bruteforce $i <number_of_instances>"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $cmd
-    Start-Sleep -Milliseconds 100
 }
 ```
-Execute powershell script locally:
-```
-powershell -ExecutionPolicy Bypass -File "C:\Users\your_username\your_project_folder\BruteForce\attacks\open_10_terminals_windows.ps1"
-```
 
----
-
-## ✅ Final Notes
-
-* `crack5.js` is the most advanced and recommended for robust demos
-* Use the naive server (`Backend.js`) for all testing
-* Monitor server logs and browser output during attacks
-
+execute using:
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\<path>\<to>\<bruteforce>\<project>\BruteForce\attacks\<file_name>.ps1"
 ```
